@@ -1,0 +1,133 @@
+---
+title: Authentication
+description: Learn how to authenticate and authorize access to HaaB Documentation APIs
+---
+
+## Authentication Methods
+
+HaaB Documentation supports multiple authentication methods to ensure secure access to your documentation resources. Choose the method that best fits your integration needs and security requirements.
+
+<Tabs>
+  <Tab title="API Keys" icon="key">
+    Use API keys for programmatic access to HaaB services. Generate keys in your account settings and include them in request headers.
+  </Tab>
+  <Tab title="OAuth" icon="shield">
+    Implement OAuth 2.0 flows for user-based authentication. Perfect for applications requiring user-specific permissions.
+  </Tab>
+  <Tab title="GitHub Integration" icon="github">
+    Leverage GitHub OAuth for seamless authentication when working with repository-connected documentation.
+  </Tab>
+</Tabs>
+
+## API Key Authentication
+
+API keys provide a simple and secure way to authenticate API requests. Each key is associated with specific permissions and can be scoped to particular repositories or documentation spaces.
+
+<Steps>
+  <Step title="Generate API Key" icon="key">
+    Navigate to your account settings and create a new API key with appropriate permissions.
+    ````javascript
+    // Example: Generating an API key
+    const apiKey = await haab.generateApiKey({
+      name: 'My App Key',
+      permissions: ['read', 'write']
+    });
+    ````
+  </Step>
+  <Step title="Configure Headers" icon="settings">
+    Include the API key in your request headers for all API calls.
+    ````javascript
+    const headers = {
+      'Authorization': `Bearer ${apiKey}`,
+      'Content-Type': 'application/json'
+    };
+    
+    fetch('/api/documents', { headers })
+      .then(response => response.json())
+      .then(data => console.log(data));
+    ````
+  </Step>
+  <Step title="Test Authentication" icon="check-circle">
+    Verify your authentication setup by making a test API request to retrieve your user profile.
+  </Step>
+</Steps>
+
+## OAuth Integration
+
+For applications requiring user-specific access, implement OAuth 2.0 to obtain access tokens that represent authenticated users.
+
+<Callout kind="tip">
+  OAuth tokens automatically inherit user permissions, making them ideal for applications that need to respect individual user access controls.
+</Callout>
+
+<CodeGroup tabs="JavaScript,Python">
+  ````javascript
+  // OAuth flow implementation
+  const oauthConfig = {
+    clientId: 'your-client-id',
+    redirectUri: 'https://yourapp.com/callback',
+    scope: ['documents:read', 'repositories:write']
+  };
+  
+  // Initiate OAuth flow
+  window.location.href = `https://haab.com/oauth/authorize?${new URLSearchParams(oauthConfig)}`;
+  ````
+  ````python
+  import requests
+  
+  # OAuth token exchange
+  token_response = requests.post('https://haab.com/oauth/token', {
+      'grant_type': 'authorization_code',
+      'code': authorization_code,
+      'client_id': 'your-client-id',
+      'client_secret': 'your-client-secret'
+  })
+  
+  access_token = token_response.json()['access_token']
+  ````
+</CodeGroup>
+
+## Permission Scopes
+
+HaaB uses granular permission scopes to control access to different resources and operations.
+
+| Scope | Description | Example Use Case |
+|-------|-------------|------------------|
+| `documents:read` | Read access to documentation | Viewing public docs |
+| `documents:write` | Create and modify documents | Content management |
+| `repositories:read` | Access repository information | Integration dashboards |
+| `repositories:write` | Modify repository settings | Automation tools |
+| `users:read` | Access user profiles | Team management |
+| `admin` | Full administrative access | System administration |
+
+## Security Best Practices
+
+<Expandable title="Token Management" default-open="false">
+  Store access tokens securely and rotate them regularly. Use environment variables for API keys in production applications.
+</Expandable>
+
+<Expandable title="Rate Limiting" default-open="false">
+  Be aware of API rate limits and implement appropriate retry logic. Monitor your usage through the developer dashboard.
+</Expandable>
+
+<Expandable title="Webhook Security" default-open="false">
+  Verify webhook signatures to ensure requests originate from HaaB. Use the provided secret to validate incoming webhook payloads.
+</Expandable>
+
+<Callout kind="alert">
+  Never expose API keys or access tokens in client-side code or public repositories. Always use secure server-side storage for sensitive credentials.
+</Callout>
+
+## Troubleshooting
+
+<ExpandableGroup>
+  <Expandable title="Authentication Failed" default-open="false">
+    Check that your API key is valid and has the required permissions. Verify the token hasn't expired and is properly formatted in the Authorization header.
+  </Expandable>
+  <Expandable title="Invalid Scope" default-open="false">
+    Ensure your access token includes the necessary scopes for the operation you're attempting. Some endpoints require specific permissions.
+  </Expandable>
+  <Expandable title="Rate Limit Exceeded" default-open="false">
+    Implement exponential backoff in your retry logic. Consider upgrading your plan for higher rate limits if needed.
+  </Expandable>
+</ExpandableGroup>

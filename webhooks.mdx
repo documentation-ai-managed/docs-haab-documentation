@@ -1,0 +1,187 @@
+---
+title: Webhooks
+description: Set up and manage webhooks for real-time notifications and automated workflows
+---
+
+## Webhook Overview
+
+Webhooks enable HaaB Documentation to send real-time notifications to your applications when specific events occur. This allows you to build automated workflows and keep your systems synchronized.
+
+<Columns cols={2}>
+  <Card title="Event-Driven" icon="zap" href="#events">
+    Receive notifications for repository changes, documentation updates, and user actions.
+  </Card>
+  <Card title="Secure Delivery" icon="shield" href="#security">
+    Webhooks are delivered with cryptographic signatures to ensure authenticity.
+  </Card>
+</Columns>
+
+## Supported Events
+
+HaaB supports a comprehensive set of webhook events to cover all aspects of documentation management.
+
+| Event Type | Description | Payload Example |
+|------------|-------------|-----------------|
+| `document.created` | New document added | `{ "id": "doc_123", "title": "New Guide" }` |
+| `document.updated` | Document modified | `{ "id": "doc_123", "changes": ["title", "content"] }` |
+| `repository.synced` | Repo sync completed | `{ "repo": "user/repo", "status": "success" }` |
+| `user.invited` | User invited to space | `{ "email": "user@example.com", "role": "editor" }` |
+
+## Setting Up Webhooks
+
+<Steps>
+  <Step title="Create Endpoint" icon="server">
+    Set up an HTTP endpoint in your application to receive webhook payloads.
+    ````javascript
+    app.post('/webhooks/haab', (req, res) => {
+      const payload = req.body;
+      const signature = req.headers['x-haab-signature'];
+      
+      // Process webhook
+      console.log('Received webhook:', payload);
+      res.sendStatus(200);
+    });
+    ````
+  </Step>
+  <Step title="Register Webhook" icon="plus">
+    Register your endpoint URL in the HaaB dashboard or via API.
+    ````bash
+    haab webhooks create \
+      --url https://yourapp.com/webhooks/haab \
+      --events document.created,document.updated \
+      --secret your-webhook-secret
+    ````
+  </Step>
+  <Step title="Configure Events" icon="settings">
+    Specify which events you want to receive notifications for.
+  </Step>
+  <Step title="Test Webhook" icon="check-circle">
+    Send a test webhook to verify your endpoint is working correctly.
+  </Step>
+</Steps>
+
+## Security and Validation
+
+<Callout kind="alert">
+  Always verify webhook signatures to prevent unauthorized requests. Use the webhook secret to validate incoming payloads.
+</Callout>
+
+<CodeGroup tabs="Node.js,Python,PHP">
+  ````javascript
+  const crypto = require('crypto');
+  
+  function verifySignature(payload, signature, secret) {
+    const expectedSignature = crypto
+      .createHmac('sha256', secret)
+      .update(JSON.stringify(payload))
+      .digest('hex');
+    
+    return signature === `sha256=${expectedSignature}`;
+  }
+  
+  // Usage
+  const isValid = verifySignature(req.body, req.headers['x-haab-signature'], process.env.WEBHOOK_SECRET);
+  ````
+  ````python
+  import hmac
+  import hashlib
+  import json
+  
+  def verify_signature(payload, signature, secret):
+    expected = hmac.new(
+      secret.encode('utf-8'),
+      json.dumps(payload, separators=(',', ':')).encode('utf-8'),
+      hashlib.sha256
+    ).hexdigest()
+    
+    return hmac.compare_digest(signature, f'sha256={expected}')
+  
+  # Usage
+  is_valid = verify_signature(request.json, request.headers.get('X-Haab-Signature'), os.getenv('WEBHOOK_SECRET'))
+  ````
+  ````php
+  function verifySignature($payload, $signature, $secret) {
+    $expected = hash_hmac('sha256', json_encode($payload, JSON_UNESCAPED_SLASHES), $secret);
+    return hash_equals($signature, "sha256={$expected}");
+  }
+  
+  // Usage
+  $isValid = verifySignature($_POST, $_SERVER['HTTP_X_HAAB_SIGNATURE'], getenv('WEBHOOK_SECRET'));
+  ````
+</CodeGroup>
+
+## Webhook Payloads
+
+All webhook payloads follow a consistent structure with event-specific data.
+
+<Expandable title="Payload Structure" default-open="false">
+  Every webhook includes a standard envelope with event metadata and event-specific data.
+</Expandable>
+
+<Expandable title="Retry Logic" default-open="false">
+  Failed webhook deliveries are automatically retried with exponential backoff for up to 24 hours.
+</Expandable>
+
+## Managing Webhooks
+
+<Tabs>
+  <Tab title="Dashboard" icon="layout-dashboard">
+    Manage webhooks through the HaaB web interface for easy configuration and monitoring.
+  </Tab>
+  <Tab title="API" icon="code">
+    Use the webhooks API for programmatic management of webhook endpoints.
+    ````javascript
+    // List webhooks
+    const webhooks = await fetch('/api/webhooks', {
+      headers: { 'Authorization': `Bearer ${apiKey}` }
+    }).then(r => r.json());
+    
+    // Update webhook
+    await fetch(`/api/webhooks/${webhookId}`, {
+      method: 'PATCH',
+      headers: {
+        'Authorization': `Bearer ${apiKey}`,
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify({ events: ['document.updated'] })
+    });
+    ````
+  </Tab>
+  <Tab title="CLI" icon="terminal">
+    Control webhooks from the command line for automation and scripting.
+    ````bash
+    # List all webhooks
+    haab webhooks list
+    
+    # Update webhook events
+    haab webhooks update webhook_123 --events document.created,repository.synced
+    
+    # Delete webhook
+    haab webhooks delete webhook_123
+    ````
+  </Tab>
+</Tabs>
+
+## Best Practices
+
+<Callout kind="tip">
+  Implement idempotent webhook handlers to gracefully handle duplicate deliveries.
+</Callout>
+
+<ExpandableGroup>
+  <Expandable title="Error Handling" default-open="false">
+    Return appropriate HTTP status codes (2xx for success, 4xx/5xx for errors) to control retry behavior.
+  </Expandable>
+  <Expandable title="Performance" default-open="false">
+    Process webhooks asynchronously and acknowledge receipt quickly to avoid timeouts.
+  </Expandable>
+  <Expandable title="Monitoring" default-open="false">
+    Log webhook deliveries and implement alerting for failed deliveries or unusual patterns.
+  </Expandable>
+</ExpandableGroup>
+
+## Troubleshooting
+
+<Expandable title="Common Issues" default-open="false">
+  Check webhook delivery logs in your HaaB dashboard for detailed error information and payload examples.
+</Expandable>

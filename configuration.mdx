@@ -1,0 +1,167 @@
+---
+title: Configuration
+description: Configure HaaB Documentation settings and customize your documentation environment
+---
+
+## Basic Configuration
+
+Setting up HaaB Documentation requires minimal configuration to get started. Focus on connecting your repositories and defining your documentation structure.
+
+<Steps>
+  <Step title="Create Workspace" icon="folder">
+    Set up your documentation workspace and define the basic structure for your projects.
+  </Step>
+  <Step title="Connect Repositories" icon="github">
+    Link your GitHub repositories to enable automatic synchronization and version tracking.
+    ````bash
+    haab config set --repo https://github.com/your-org/your-repo
+    haab config set --branch main
+    ````
+  </Step>
+  <Step title="Configure Access" icon="shield">
+    Define user roles and permissions for your documentation space.
+  </Step>
+  <Step title="Set Up Webhooks" icon="webhook">
+    Configure webhooks to receive real-time updates from your repositories.
+  </Step>
+</Steps>
+
+## Advanced Settings
+
+For more complex setups, HaaB offers extensive configuration options to customize behavior and integrate with your existing workflows.
+
+<Tabs>
+  <Tab title="Environment Variables" icon="settings">
+    Configure HaaB using environment variables for different deployment environments.
+    ````bash
+    export HAAB_API_KEY=your-api-key
+    export HAAB_BASE_URL=https://api.haab.com
+    export HAAB_WEBHOOK_SECRET=your-webhook-secret
+    ````
+  </Tab>
+  <Tab title="Config Files" icon="file-text">
+    Use YAML or JSON configuration files for complex setups.
+    ````yaml
+    # haab.config.yaml
+    repositories:
+      - url: https://github.com/your-org/docs
+        branch: main
+        sync: true
+    webhooks:
+      enabled: true
+      secret: your-webhook-secret
+    ````
+  </Tab>
+  <Tab title="Programmatic Setup" icon="code">
+    Configure HaaB programmatically using our SDK.
+    ````javascript
+    const haab = require('haab-sdk');
+    
+    await haab.configure({
+      repositories: [
+        { url: 'https://github.com/your-org/repo', branch: 'main' }
+      ],
+      webhooks: {
+        enabled: true,
+        secret: process.env.WEBHOOK_SECRET
+      }
+    });
+    ````
+  </Tab>
+</Tabs>
+
+## Repository Integration
+
+HaaB seamlessly integrates with GitHub repositories to keep your documentation synchronized with your code.
+
+<Callout kind="info">
+  Repository integration enables automatic documentation updates whenever you push changes to your configured branches.
+</Callout>
+
+<CodeGroup tabs="CLI,API">
+  ````bash
+  # Add a repository
+  haab repo add https://github.com/your-org/docs --branch main
+  
+  # Configure sync settings
+  haab repo config --sync-enabled true --auto-deploy true
+  
+  # List connected repositories
+  haab repo list
+  ````
+  ````javascript
+  const response = await fetch('/api/repositories', {
+    method: 'POST',
+    headers: {
+      'Authorization': `Bearer ${apiKey}`,
+      'Content-Type': 'application/json'
+    },
+    body: JSON.stringify({
+      url: 'https://github.com/your-org/docs',
+      branch: 'main',
+      syncEnabled: true
+    })
+  });
+  
+  const repo = await response.json();
+  ````
+</CodeGroup>
+
+## Webhook Configuration
+
+Set up webhooks to receive real-time notifications about repository changes and documentation updates.
+
+| Webhook Event | Description | Recommended Action |
+|---------------|-------------|-------------------|
+| `push` | Code pushed to repository | Sync documentation |
+| `pull_request` | PR opened/updated | Validate docs |
+| `release` | New release published | Update version docs |
+| `issues` | Issue created/updated | Update FAQ/docs |
+
+<Expandable title="Webhook Security" default-open="false">
+  Always verify webhook signatures using the provided secret to ensure requests originate from GitHub.
+</Expandable>
+
+<Expandable title="Event Filtering" default-open="false">
+  Configure webhooks to only trigger on specific branches or file paths to reduce noise.
+</Expandable>
+
+## Customization Options
+
+Personalize your HaaB documentation experience with various customization settings.
+
+<ExpandableGroup>
+  <Expandable title="Branding" default-open="false">
+    Customize colors, logos, and themes to match your brand identity.
+  </Expandable>
+  <Expandable title="Navigation" default-open="false">
+    Configure sidebar navigation, tabs, and menu structure.
+  </Expandable>
+  <Expandable title="Permissions" default-open="false">
+    Set up role-based access control for different team members.
+  </Expandable>
+  <Expandable title="Integrations" default-open="false">
+    Connect with external tools like Slack, Discord, and project management platforms.
+  </Expandable>
+</ExpandableGroup>
+
+<Callout kind="tip">
+  Use the configuration validation command to check your settings before deploying changes.
+</Callout>
+
+## Troubleshooting Configuration Issues
+
+<Steps>
+  <Step title="Validate Config" icon="check-circle">
+    Run configuration validation to identify any syntax errors or missing required fields.
+  </Step>
+  <Step title="Check Permissions" icon="shield">
+    Verify that your API keys and tokens have the necessary permissions for the configured operations.
+  </Step>
+  <Step title="Test Connections" icon="network">
+    Test repository connections and webhook endpoints to ensure they're reachable.
+  </Step>
+  <Step title="Review Logs" icon="file-text">
+    Check application logs for detailed error messages and debugging information.
+  </Step>
+</Steps>
